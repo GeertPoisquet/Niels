@@ -1,4 +1,4 @@
-
+#include <Arduino.h>
 #include <SPI.h>              // include libraries
 #include <LoRa.h>
 #include <wdt_samd21.h>
@@ -52,6 +52,9 @@ const int irqPin = 1;         // change for your board; must be a hardware inter
 
 String outgoing;              // outgoing message
 int relay = 2;
+int sensorPin=A0;
+int sensorValue;
+int delayTime;
 
 byte msgCount = 0;            // count of outgoing messages
 byte localAddress = 0xBB;     // address of this device
@@ -61,6 +64,8 @@ String message = "Smartduck";   // send a message
 
 int seconden;
 
+bool onReceive(int packetSize);
+void sendMessage(String outgoing);
 
 void TimerHandler()
 {
@@ -68,7 +73,7 @@ void TimerHandler()
    seconden++;
    Serial.print("seconden: ");
    Serial.println(seconden);
-   if (seconden>=10){
+   if (seconden>=delayTime){
     seconden=0;
     ITimer.disableTimer();
     digitalWrite(relay, LOW);
@@ -82,7 +87,7 @@ void TimerHandler()
 
 void setup() {
   Serial.begin(9600);                   // initialize serial
-  while (!Serial);
+  //while (!Serial);
 
   
   if (!LoRa.begin(868E6)) {             // initialize ratio at 868MHz
@@ -114,6 +119,11 @@ void loop() {
 
   // "feed" the WDT to avoid restart
       wdt_reset();
+  sensorValue = analogRead(sensorPin);
+  delayTime=sensorValue*900/1023;
+  Serial.print("Delay time= ");
+  Serial.println(delayTime);
+  
   
 }
 

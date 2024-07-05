@@ -8,6 +8,7 @@ const int resetPin = 6;       // LoRa radio reset
 const int irqPin = 1;         // change for your board; must be a hardware interrupt pin
 int button = 2;
 int buttonState;
+
 bool buttonflag=false;
 bool sendmessage=false;
 String outgoing;              // outgoing message
@@ -22,10 +23,12 @@ int interval = 2000;          // interval between sends
 
 String message = "Smartduck";   // send a message
 
+void sendMessage(String outgoing);
+bool onReceive(int packetSize);
 
 void setup() {
   Serial.begin(9600);                   // initialize serial
-  while (!Serial);
+  
 
   Serial.println("LoRa Duplex");
   pinMode(button, INPUT_PULLUP);
@@ -39,7 +42,7 @@ void setup() {
 
   Serial.println("LoRa init succeeded.");
   // Initialze WDT with a 2 sec. timeout
-   //wdt_init ( WDT_CONFIG_PER_2K );
+   wdt_init ( WDT_CONFIG_PER_2K );
 }
 
 void loop() {
@@ -62,7 +65,7 @@ void loop() {
     sendmessage=false;
     msgCount=0;
   }
-
+  
   // "feed" the WDT to avoid restart
       wdt_reset();
 }
@@ -91,6 +94,7 @@ bool onReceive(int packetSize) {
 
   while (LoRa.available()) {
     incoming += (char)LoRa.read();
+     wdt_reset();
   }
 
   if (incomingLength != incoming.length()) {   // check length for error
